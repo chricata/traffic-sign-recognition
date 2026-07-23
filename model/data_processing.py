@@ -23,14 +23,19 @@ def load_data(scenes_path, meta_path, classes):
     return combined_data
 
 
+def clean_data(df):
+    df = df[df["Description"].notna()]
+    return df
+
+
 def main():
     classes = get_classes_description(classes_description_file)
 
     train_data = load_data(scenes_train_dir + "/imgs", scenes_train_dir + "/meta_train.csv", classes)
     test_data = load_data(scenes_test_dir + "/imgs", scenes_test_dir + "/meta_test.csv", classes)
 
-    print(train_data.head())
-    print(test_data.head())
+    train_data = clean_data(train_data)
+    test_data = clean_data(test_data)
 
 
 if __name__ == '__main__':
