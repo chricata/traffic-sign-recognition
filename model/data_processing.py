@@ -102,6 +102,26 @@ def clean_data(df):
     return df
 
 
+def create_class_mapping(data):
+    """Creates a mapping from class descriptions to numbered labels.
+
+    Parameters
+    ----------
+    data : pandas dataframe
+        A dataframe containing the training data required for model training.
+
+    Returns
+    -------
+    dictionary
+        A dictionary mapping each unique class description to an integer label
+    """
+    unique_classes = sorted(data['Description'].unique())
+    mapping = {}
+    for i, description in enumerate(unique_classes):
+        mapping[description] = i
+    return mapping
+
+
 def main():
     rename_images_folder(scenes_train_dir)
 
@@ -112,6 +132,8 @@ def main():
 
     train_data = clean_data(train_data)
     test_data = clean_data(test_data)
+
+    class_mapping = create_class_mapping(train_data)
 
 
 if __name__ == '__main__':
