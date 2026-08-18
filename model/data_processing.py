@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 
+from PIL import Image
+
 classes_description_file = "traffic-sign-recognition/dataset/signs/Classes_Description.xlsx"
 scenes_train_dir = "traffic-sign-recognition/dataset/scenes/train"
 scenes_test_dir = "traffic-sign-recognition/dataset/scenes/test"
@@ -122,6 +124,41 @@ def create_class_mapping(data):
     return mapping
 
 
+def create_labels(data, class_mapping, label_dir):
+    """Creates label files for each scene in the dataset for YOLO training.
+
+    Parameters
+    ----------
+    data : pandas dataframe
+        A dataframe containing the scene image data.
+    
+    class_mapping : dictionary
+        A dictionary that maps all class descriptions to an integer.
+
+    label_dir : str
+        The directory where the label files will be saved.
+    """
+    os.makedirs(label_dir, exist_ok=True)
+
+    for image_id, group in data.groupby('image_id'):
+        label_path = os.path.join(label_dir, str(image_id) + '.txt')
+        with Image.open(group['image_path'].iloc[0]) as img:
+            width, height = img.size
+        with open(label_path, 'w') as f:
+            for _, row in group.iterrows():
+                class_id = class_mapping[row['Description']]
+
+                x1, y1 = row['xtl'], row['ytl']
+                x2, y2 = row['xbr'], row['ybr']
+
+                xc = (x1 + x2) / 2 / width
+                yc = (y1 + y2) / 2 / height
+                bw = (x2 - x1) / width
+                bh = (y2 - y1) / height
+
+                f.write(f"{class_id} {xc:.6f} {yc:.6f} {bw:.6f} {bh:.6f}\n")
+
+
 def main():
     rename_images_folder(scenes_train_dir)
 
@@ -134,6 +171,9 @@ def main():
     test_data = clean_data(test_data)
 
     class_mapping = create_class_mapping(train_data)
+
+    create_labels(train_data, class_mapping, scenes_train_dir + "/labels")
+    create_labels(test_data, class_mapping, scenes_test_dir + "/labels")
 
 
 if __name__ == '__main__':
