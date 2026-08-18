@@ -5,6 +5,19 @@ classes_description_file = "traffic-sign-recognition/dataset/signs/Classes_Descr
 scenes_train_dir = "traffic-sign-recognition/dataset/scenes/train"
 scenes_test_dir = "traffic-sign-recognition/dataset/scenes/test"
 
+
+def rename_images_folder(path):
+    """Renames the training scene images directory for YOLO training.
+
+    Parameters
+    ----------
+    path : str
+        The path to the training scene directory.
+    """    
+    if os.path.exists(path + "imgs") and not os.path.exists(path + "/images"):
+        os.rename(path + "imgs", path + "/images")
+
+
 def get_classes_description(path):
     """Loads and returns the sign class descriptions from an Excel file.
 
@@ -90,10 +103,12 @@ def clean_data(df):
 
 
 def main():
+    rename_images_folder(scenes_train_dir)
+
     classes = get_classes_description(classes_description_file)
 
-    train_data = load_data(scenes_train_dir + "/imgs", scenes_train_dir + "/meta_train.csv", classes)
-    test_data = load_data(scenes_test_dir + "/imgs", scenes_test_dir + "/meta_test.csv", classes)
+    train_data = load_data(scenes_train_dir + "/images", scenes_train_dir + "/meta_train.csv", classes)
+    test_data = load_data(scenes_test_dir + "/images", scenes_test_dir + "/meta_test.csv", classes)
 
     train_data = clean_data(train_data)
     test_data = clean_data(test_data)
