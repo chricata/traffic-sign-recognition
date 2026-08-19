@@ -6,6 +6,7 @@ from PIL import Image
 classes_description_file = "traffic-sign-recognition/dataset/signs/Classes_Description.xlsx"
 scenes_train_dir = "traffic-sign-recognition/dataset/scenes/train"
 scenes_test_dir = "traffic-sign-recognition/dataset/scenes/test"
+dataset_dir = "traffic-sign-recognition/dataset"
 
 
 def rename_images_folder(path):
@@ -159,6 +160,28 @@ def create_labels(data, class_mapping, label_dir):
                 f.write(f"{class_id} {xc:.6f} {yc:.6f} {bw:.6f} {bh:.6f}\n")
 
 
+def create_yaml_file(class_mapping, output_path):
+    """Creates a YAML file required for YOLO training.
+
+    Parameters
+    ----------
+    class_mapping : dictionary
+        A dictionary that maps all class descriptions to an integer.
+
+    output_path : str
+        The path where the YAML file will be saved.
+    """
+    yaml_content = f"path: {os.path.abspath(dataset_dir)}/scenes\n"
+    yaml_content += f"train: train/images\n"
+    yaml_content += f"val: test/images\n"
+    yaml_content += f"names:\n"
+    for description, id in class_mapping.items():
+        yaml_content += f" {id}: {description}\n"
+
+    with open(output_path, 'w') as f:
+        f.write(yaml_content)
+
+
 def main():
     rename_images_folder(scenes_train_dir)
 
@@ -174,6 +197,8 @@ def main():
 
     create_labels(train_data, class_mapping, scenes_train_dir + "/labels")
     create_labels(test_data, class_mapping, scenes_test_dir + "/labels")
+
+    create_yaml_file(class_mapping, f"{dataset_dir}/data.yaml")
 
 
 if __name__ == '__main__':
